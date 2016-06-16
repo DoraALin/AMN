@@ -69,18 +69,20 @@ public class ArtifactManifest implements Serializable{
         this.artifacts = artifacts;
     }
 
-    public void addArtifact(Artifact artifact) {
+    public ArtifactManifestArtifact addArtifact(Artifact artifact) {
         ArtifactManifestArtifact ama = new ArtifactManifestArtifact(this, artifact);
         artifacts.add(ama);
         artifact.getArtifactManifest().add(ama);
+        return ama;
     }
 
-    public void removeArtifact(Artifact artifact) {
+    public ArtifactManifestArtifact removeArtifact(Artifact artifact) {
         ArtifactManifestArtifact ama = new ArtifactManifestArtifact(this, artifact);
         artifact.getArtifactManifest().remove(ama);
         artifacts.remove(ama);
-        ama.setArtifactManifest(null);
-        ama.setArtifact(null);
+        return ama;
+//        ama.setArtifactManifest(null);
+//        ama.setArtifact(null);
     }
 
     @Override
