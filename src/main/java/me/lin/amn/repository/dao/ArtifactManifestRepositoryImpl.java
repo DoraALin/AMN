@@ -13,27 +13,22 @@ import javax.persistence.PersistenceContext;
  * Created by Lin on 6/16/16.
  */
 @Repository
+@Transactional
 public class ArtifactManifestRepositoryImpl implements ArtifactManifestArtifactRelation{
-    EntityManager em;
 
     @PersistenceContext
-    void setEntityManager(EntityManager em) {
-        this.em = em;
-    }
+    EntityManager em;
 
     @Override
-    @Transactional
     public void addArtifact(ArtifactManifest artManifest, Artifact art) {
         ArtifactManifestArtifact ama = artManifest.addArtifact(art);
         em.persist(ama);
-//        em.merge(artManifest);
     }
 
     @Override
-    @Transactional
     public void removeArtifact(ArtifactManifest artManifest, Artifact art) {
         ArtifactManifestArtifact ama = artManifest.removeArtifact(art);
-        ama = em.merge(ama);
+        em.merge(ama);
         em.remove(ama);
     }
 

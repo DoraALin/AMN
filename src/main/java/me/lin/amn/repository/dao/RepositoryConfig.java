@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -22,6 +24,7 @@ import javax.sql.DataSource;
 @Configuration
 @ComponentScan
 @EnableJpaRepositories(basePackages = "me.lin.amn.repository.dao")
+@EnableTransactionManagement
 public class RepositoryConfig {
 
     public RepositoryConfig(){
@@ -67,5 +70,10 @@ public class RepositoryConfig {
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @Bean
+    public PersistenceAnnotationBeanPostProcessor paPostProcessor() {
+        return new PersistenceAnnotationBeanPostProcessor();
     }
 }
