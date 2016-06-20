@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface ArtifactRepository extends JpaRepository<Artifact, String> {
     //Repository methods are composed of:
     // a verb,
-    // an optional subject, if not specified, imply to Artifact
+    // an optional subject, if not specified, imply to artifact
     // the word By,
     // and a predicate.
     Artifact findByArtifactID(String artifactID);

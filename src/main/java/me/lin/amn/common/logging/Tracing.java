@@ -3,7 +3,10 @@ package me.lin.amn.common.logging;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 
 /**
  * Created by Lin on 6/17/16.
@@ -13,7 +16,7 @@ public class Tracing {
 
     private static Log LOG = LogFactory.getLog(Tracing.class.getName());
 
-    @Pointcut("execution(** me.lin.amn.repository.dao.ArtifactManifestArtifactRelation+.addArtifact(..))")
+    @Pointcut("execution(** me.lin.amn.repository.dao.interfaces.ArtifactManifestArtifactRelation+.addArtifact(..))")
     public void trace() {
     }
 
