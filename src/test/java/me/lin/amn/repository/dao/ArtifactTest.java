@@ -52,6 +52,13 @@ public class ArtifactTest extends TestCase {
     }
 
     @Test
+    public void testDeleteArtifact(){
+        Artifact art = new Artifact(null);
+        art  = artRepo.save(art);
+        artRepo.delete(art);
+    }
+
+    @Test
     public void testRelateArtifactManifestAndArtifact() {
         ArtifactManifest am1 = new ArtifactManifest("test manifest 1");
         ArtifactManifest am2 = new ArtifactManifest("test manifest 2");
