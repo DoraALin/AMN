@@ -1,5 +1,6 @@
 package me.lin.amn.repository.dao;
 
+import me.lin.amn.repository.dao.interfaces.ArtifactManifestArtifactRelation;
 import me.lin.amn.repository.model.Artifact;
 import me.lin.amn.repository.model.ArtifactManifest;
 import me.lin.amn.repository.model.ArtifactManifestArtifact;
@@ -14,7 +15,7 @@ import javax.persistence.PersistenceContext;
  */
 @Repository
 @Transactional
-public class ArtifactManifestRepositoryImpl implements ArtifactManifestArtifactRelation{
+public class ArtifactManifestRepositoryImpl implements ArtifactManifestArtifactRelation {
 
     @PersistenceContext
     EntityManager em;

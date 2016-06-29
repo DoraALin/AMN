@@ -1,5 +1,6 @@
 package me.lin.amn.repository.model;
 
+import me.lin.amn.repository.model.artifact.ArtifactBuilder;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -13,12 +14,12 @@ import java.util.Objects;
 /**
  * Created by Lin on 5/30/16.
  */
-@Entity(name="Artifact")
+@Entity(name="artifact")
 @Table(name="ARTIFACTS")
 public class Artifact implements Serializable {
     private String artifactID;
     private Date lastModified;      //last modified
-    private int refCount;           //reference count from asset to asset
+    private int refCount;           //reference count from asset to this artifact
     private Blob artifact;
 
 
@@ -26,6 +27,10 @@ public class Artifact implements Serializable {
 
     public Artifact() {
 
+    }
+
+    public static ArtifactBuilder create(String filename){
+        return new ArtifactBuilder(filename);
     }
 
     public Artifact(Blob artifactBlob) {

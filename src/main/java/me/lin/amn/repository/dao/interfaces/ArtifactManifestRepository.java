@@ -1,4 +1,4 @@
-package me.lin.amn.repository.dao;
+package me.lin.amn.repository.dao.interfaces;
 
 import me.lin.amn.repository.model.ArtifactManifest;
 import org.springframework.data.jpa.repository.JpaRepository;

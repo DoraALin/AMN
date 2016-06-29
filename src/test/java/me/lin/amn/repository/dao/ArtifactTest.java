@@ -2,6 +2,7 @@ package me.lin.amn.repository.dao;
 
 import junit.framework.TestCase;
 import me.lin.amn.common.logging.TracingConfig;
+import me.lin.amn.repository.dao.interfaces.ArtifactManifestRepository;
 import me.lin.amn.repository.model.Artifact;
 import me.lin.amn.repository.model.ArtifactManifest;
 import org.apache.commons.logging.Log;
@@ -48,6 +49,13 @@ public class ArtifactTest extends TestCase {
         am2 = artManifestRepo.save(am2);
         long cnt = artManifestRepo.count();
         assertEquals("ArtifactManifest records does not match.", 2, cnt);
+    }
+
+    @Test
+    public void testDeleteArtifact(){
+        Artifact art = new Artifact(null);
+        art  = artRepo.save(art);
+        artRepo.delete(art);
     }
 
     @Test
