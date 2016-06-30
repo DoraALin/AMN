@@ -1,15 +1,12 @@
 package me.lin.amn.repository.model.artifact;
 
-import me.lin.amn.repository.dao.ArtifactRepository;
+import me.lin.amn.repository.dao.interfaces.ArtifactRepository;
 import me.lin.amn.repository.model.Artifact;
-import org.aspectj.weaver.ast.Call;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 
 /**
@@ -27,7 +24,6 @@ public class ArtifactUpload implements Uploadable, Runnable{
 
     private CyclicBarrier barrier;
 
-    @Autowired
     private ArtifactRepository artRepo;
 
     /**
@@ -37,11 +33,12 @@ public class ArtifactUpload implements Uploadable, Runnable{
 
     }
 
-    public ArtifactUpload(String fileName, long len, InputStream is, CyclicBarrier barrier){
+    public ArtifactUpload(String fileName, long len, InputStream is, CyclicBarrier barrier, ArtifactRepository artRepo){
         this.is = is;
         this.len = len;
         this.fileName = fileName;
         this.barrier = barrier;
+        this.artRepo = artRepo;
     }
 
     /**

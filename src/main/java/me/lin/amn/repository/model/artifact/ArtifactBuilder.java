@@ -1,6 +1,7 @@
 package me.lin.amn.repository.model.artifact;
 
 import me.lin.amn.common.logging.TracingConfig;
+import me.lin.amn.repository.ApplicationContextProvider;
 import me.lin.amn.repository.ServerConfig;
 import me.lin.amn.repository.model.Artifact;
 import org.hibernate.Session;
@@ -21,9 +22,6 @@ import java.sql.Blob;
 @Scope("prototype")
 public class ArtifactBuilder {
 
-    @Autowired
-    private EntityManagerFactory emf;
-
     private Artifact artifact;
 
     private String fileName;
@@ -39,8 +37,7 @@ public class ArtifactBuilder {
     }
 
     public ArtifactBuilder portArtifactFromInputStream(InputStream is, long len) {
-        ApplicationContext context =
-                new AnnotationConfigApplicationContext(TracingConfig.class, ServerConfig.class);
+        ApplicationContext context = ApplicationContextProvider.getApplicationContext();
         EntityManagerFactory emf = context.getBean(EntityManagerFactory.class);
         Session session = (Session) emf.createEntityManager().getDelegate();
         Blob blob = session.getLobHelper().createBlob(is, len);

@@ -1,5 +1,8 @@
 package me.lin.amn.repository.controller;
 
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,10 +17,10 @@ public class ControllerConfig {
 
     }
 
-//    @Bean
-//    ServletFileUpload servletFileUpload() {
-//        DiskFileItemFactory factory = new DiskFileItemFactory();
-//        ServletFileUpload fileUploadServlet = new ServletFileUpload(factory);
-//        return fileUploadServlet;
-//    }
+    @Bean
+    ServletFileUpload servletFileUpload() {
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        ServletFileUpload fileUploadServlet = new ServletFileUpload(factory);
+        return fileUploadServlet;
+    }
 }

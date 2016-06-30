@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
  * Created by Lin on 6/16/16.
  */
 @Repository
-public interface ArtifactManifestRepository extends JpaRepository<ArtifactManifest, String>, ArtifactManifestArtifactRelation {
+public interface ArtifactManifestRepository extends JpaRepository<ArtifactManifest, String>, IArtifactManifest {
 }
