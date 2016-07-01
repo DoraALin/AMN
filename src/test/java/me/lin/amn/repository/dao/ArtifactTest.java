@@ -3,6 +3,7 @@ package me.lin.amn.repository.dao;
 import junit.framework.TestCase;
 import me.lin.amn.common.logging.TracingConfig;
 import me.lin.amn.repository.dao.interfaces.ArtifactManifestRepository;
+import me.lin.amn.repository.dao.interfaces.ArtifactRepository;
 import me.lin.amn.repository.model.Artifact;
 import me.lin.amn.repository.model.ArtifactManifest;
 import org.apache.commons.logging.Log;

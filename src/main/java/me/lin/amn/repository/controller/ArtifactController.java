@@ -1,34 +1,39 @@
 package me.lin.amn.repository.controller;
 
-import me.lin.amn.common.logging.TracingConfig;
-import me.lin.amn.repository.ServerConfig;
-import me.lin.amn.repository.dao.ArtifactRepository;
+import me.lin.amn.repository.ArtifactManager;
+import me.lin.amn.repository.dao.interfaces.ArtifactRepository;
 import me.lin.amn.repository.model.Artifact;
 import me.lin.amn.repository.model.artifact.ArtifactUpload;
-import me.lin.amn.repository.model.artifact.Uploadable;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 /**
@@ -40,7 +45,28 @@ public class ArtifactController {
 
     private static Log LOG = LogFactory.getLog(ArtifactController.class.getName());
 
-    private ServletFileUpload fileUpload = new ServletFileUpload(new DiskFileItemFactory());
+    @Autowired
+    private ServletFileUpload fileUpload;
+
+    @Autowired
+    private ArtifactManager artifactManager;
+
+    @RequestMapping(value = "/one", method = GET )
+    public void download(@RequestParam("artifactID") String artifactID, OutputStream os) {
+        if((null == artifactID ||
+                (null != artifactID && artifactID.isEmpty()))){
+            return;
+        }
+        Artifact artifact =  artifactManager.getArtifactById(artifactID);
+        try {
+            artifactManager.getBinaryStream(artifact, os);
+        } catch (SQLException e) {
+            throw new ArtifactControllerException("Could not retrieve artifact with id: " + artifactID + '.', e);
+        } catch (IOException e) {
+            throw new ArtifactControllerException("Error open output stream.", e);
+        }
+    }
+
 
     @RequestMapping(value = "/new", method = POST )
     public List<String> upload(WebRequest req,
@@ -54,17 +80,15 @@ public class ArtifactController {
             List<FileItem> fileItems = fileUpload.parseRequest(httpReq);
             //list for persist artifact
             List<ArtifactUpload> artifactUploadTasks = new ArrayList(fileItems.size());
-            ArtifactCollector collector = new ArtifactCollector(artifactUploadTasks, LOCK);
+            ArtifactCollector collector = new ArtifactCollector(artifactUploadTasks,
+                    artifactManager.getArtifactRepository(), LOCK);
             CyclicBarrier uploadBarrier = new CyclicBarrier(fileItems.size(), collector);
             //cached thread pool for multi-upload
             ExecutorService exec = Executors.newCachedThreadPool();
             //needs to be class, not interface
-            ApplicationContext context =
-                    new AnnotationConfigApplicationContext(ServerConfig.class, TracingConfig.class);
             for (int idx = 0; idx < fileItems.size(); idx++) {
                 FileItem fi = fileItems.get(idx);
-                ArtifactUpload uploadTask = (ArtifactUpload) context.getBean(Uploadable.class);
-                uploadTask.setFileInfo(fi.getName(), fi.getSize(), fi.getInputStream(), uploadBarrier);
+                ArtifactUpload uploadTask = new ArtifactUpload(fi.getName(), fi.getSize(), fi.getInputStream(), uploadBarrier, artifactManager.getArtifactRepository());
                 exec.submit(uploadTask);
                 artifactUploadTasks.add(uploadTask);
             }
@@ -76,7 +100,7 @@ public class ArtifactController {
                         LOCK.wait();
                 }
             } catch (InterruptedException e) {
-                LOG.error("Artifact Controller Thread is interrupted while waiting for artifactIDCollector to finish.", e);
+                LOG.error("artifact Controller Thread is interrupted while waiting for artifactIDCollector to finish.", e);
                 collector.clearUpload();
                 artifactIDs = new ArrayList<>(0);
             }
@@ -93,19 +117,17 @@ public class ArtifactController {
 
         private boolean uploadFinish = false;
         private boolean clearUpload = false;
-        //Artifact in Future list for collecting ID
+        //artifact in Future list for collecting ID
         private List<ArtifactUpload> artifactUploadTasks;
         private List<String> artifactIDs;
         private Object LOCK;
 
         ArtifactRepository artRepo;
 
-        ArtifactCollector(List<ArtifactUpload> artifactUploadTasks, Object LOCK){
+        ArtifactCollector(List<ArtifactUpload> artifactUploadTasks, ArtifactRepository artRepo, Object LOCK){
             this.artifactUploadTasks = artifactUploadTasks;
             this.LOCK = LOCK;
-            ApplicationContext context =
-                    new AnnotationConfigApplicationContext(ServerConfig.class, TracingConfig.class);
-            artRepo = context.getBean(ArtifactRepository.class);
+            this.artRepo = artRepo;
         }
 
         public boolean isUploadFinish(){
@@ -125,14 +147,11 @@ public class ArtifactController {
                 clearUpload = true;
                 if(isUploadFinish()) {
                     ExecutorService exec = Executors.newSingleThreadExecutor();
-                    exec.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Artifact art;
-                            for (ArtifactUpload artifact : artifactUploadTasks) {
-                                art = artifact.getArtifact();
-                                artRepo.delete(art.getArtifactID());
-                            }
+                    exec.execute(()->{
+                        Artifact art;
+                        for (ArtifactUpload artifact : artifactUploadTasks) {
+                            art = artifact.getArtifact();
+                            artRepo.delete(art.getArtifactID());
                         }
                     });
                     exec.shutdown();
@@ -149,7 +168,7 @@ public class ArtifactController {
                     art = artifact.getArtifact();
                     artifactIDs.add(art.getArtifactID());
                 }
-                //wakeup Artifact controller to continue
+                //wakeup artifact controller to continue
                 synchronized (LOCK) {
                     uploadFinish = true;
                     if(clearUpload == Boolean.TRUE){
@@ -164,6 +183,13 @@ public class ArtifactController {
             }finally {
 
             }
+        }
+    }
+
+    class ArtifactControllerException extends RuntimeException {
+
+        public ArtifactControllerException(String msg, Throwable nestedException){
+            super(msg, nestedException);
         }
     }
 }

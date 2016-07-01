@@ -16,7 +16,7 @@ public class Tracing {
 
     private static Log LOG = LogFactory.getLog(Tracing.class.getName());
 
-    @Pointcut("execution(** me.lin.amn.repository.dao.interfaces.ArtifactManifestArtifactRelation+.addArtifact(..))")
+    @Pointcut("execution(** me.lin.amn.repository.dao.interfaces.IArtifactManifest+.addArtifact(..))")
     public void trace() {
     }
 

@@ -23,7 +23,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ComponentScan
-@EnableJpaRepositories(basePackages = "me.lin.amn.repository.dao")
+@EnableJpaRepositories(basePackages = {"me.lin.amn.repository.dao", "me.lin.amn.repository.dao.interfaces"})
 @EnableTransactionManagement
 public class RepositoryConfig {
 

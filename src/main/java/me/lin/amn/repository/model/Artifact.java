@@ -2,10 +2,13 @@ package me.lin.amn.repository.model;
 
 import me.lin.amn.repository.model.artifact.ArtifactBuilder;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
